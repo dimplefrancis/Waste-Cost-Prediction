@@ -62,17 +62,17 @@ waste-cost-prediction/
 - **Mean Absolute Error (MAE):** 36.0736490097619
 - **R-squared (R2):** 0.9676199484432447
 
-![Python run screenshot]![image](Images/image-1.png)
+![image](Images/image-1.png)
 
 ### Visualization of Results
 
-![Actual vs Predicted Waste Total Cost]![image](Images/image-2.png)
+![image](Images/image-2.png)
 
 The plot shows a strong correlation between actual and predicted values, indicating good model performance.
 
 ### LIME Explanation of the Prediction
 
-![LIME Explanation]![image](Images/image-3.png)
+![image](Images/image-3.png)
 
 The LIME explanation provides insights into feature importance for individual predictions:
 
