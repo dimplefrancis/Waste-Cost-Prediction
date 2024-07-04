@@ -42,31 +42,57 @@ waste-cost-prediction/
 ├── main.py
 └── README.md
 
-## 📈 Results
-![alt text](image.png)
-![alt text](image-1.png)
-Interpretation:
-•	Mean Squared Error (MSE): The MSE value is significantly lower after outlier removal. This indicates that the model's predictions are much closer to the actual values, meaning the average squared difference between the predicted and actual values has reduced substantially.
-•	R-squared (R2): The R2 score is approximately 0.966, indicating that the model explains about 96.58% of the variance in the target variable after removing outliers. This is a substantial improvement compared to the initial results, showing that the model now captures most of the variation in the data.
-Implications:
-•	Performance Improvement: The significant reduction in MSE and the increase in R2 score demonstrate that the model's performance has greatly improved after handling outliers. This suggests that outliers were previously distorting the model's predictions.
-•	Model Robustness: The high R2 score indicates a strong fit, suggesting that the model is robust and can effectively predict the target variable for most data points.
-After performing cross-validation, the results are as follows:
-Cross-Validation R2 Scores:
-Fold 1: 0.9616
-Fold 2: 0.9563
-Fold 3: 0.9418
-Fold 4: 0.9567
-Fold 5: 0.9488
-Mean Cross-Validation R2 Score: 0.9530
-Interpretation:
-•	Consistent High Performance: The R2 scores from cross-validation are consistently high across all folds, indicating that the model maintains strong performance across different subsets of the data. This consistency is crucial for ensuring that the model generalizes well to unseen data.
-•	Mean R2 Score: The mean R2 score of 0.9530 across all folds suggests that, on average, the model explains 95.30% of the variance in the target variable during cross-validation. This further reinforces the model’s robustness and reliability.
-Implications:
-•	Generalization: The consistent and high cross-validation R2 scores imply that the model generalizes well across different data subsets, making it reliable for real-world applications.
-•	Validation of Improvements: The improved cross-validation scores validate the effectiveness of the steps taken (such as outlier removal and feature selection) to enhance the model.
-![alt text](image-2.png)
-![alt text](image-3.png)
+## 📊 Results
+
+### Model Performance
+
+- **Cross-validation scores:**
+  - Fold 1: 0.95945306
+  - Fold 2: 0.95269916
+  - Fold 3: 0.92957072
+  - Fold 4: 0.94759019
+  - Fold 5: 0.94246247
+- **Mean Cross-validation R2 Score:** 0.9463551220934384
+- **Standard Deviation of Cross-validation Scores:** 0.010101455359369406
+
+### Model Performance (Original Scale)
+
+- **Mean Squared Error (MSE):** 8162.65227882406
+- **Root Mean Squared Error (RMSE):** 90.34739774240356
+- **Mean Absolute Error (MAE):** 36.0736490097619
+- **R-squared (R2):** 0.9676199484432447
+![Python run screenshot](images/image-1.png)
+
+### Visualization of Results
+
+![Actual vs Predicted Waste Total Cost](images/image-2.png)
+
+The plot shows a strong correlation between actual and predicted values, indicating good model performance.
+
+### LIME Explanation of the Prediction
+
+![LIME Explanation](images/image-3.png)
+
+The LIME explanation provides insights into feature importance for individual predictions:
+
+- **Top positive contributors:** Waste in ML, % Waste loss, Theoretical Yield Yield_Efficiency
+- **Top negative contributors:** Theoretical Yield, G.R.Qty
+
+This explanation helps understand which features are most influential in the model's predictions for specific instances.
+
+### Interpretation
+
+1. **High R2 Score:** The model explains approximately 96.76% of the variance in the target variable, indicating excellent predictive power.
+2. **Consistent Performance:** Cross-validation scores show consistent performance across different subsets of the data, with a high mean R2 of 0.9464.
+3. **Accurate Predictions:** Low RMSE and MAE values suggest the model's predictions are close to actual values on average.
+4. **Feature Importance:** The LIME explanation reveals that waste-related features and theoretical yield are crucial in predicting total waste cost.
+5. **Outlier Handling:** The "After Outlier Removal" note in the plot title suggests that data preprocessing has improved model performance.
+
+### Implications
+
+- The model demonstrates strong potential for accurate waste cost predictions in manufacturing processes.
+- It can be a valuable tool for identifying factors that contribute most to waste costs, enabling targeted process improvements.
+- The consistent performance across cross-validation folds indicates good generalization to unseen data.
 
 📝 License
 This project is MIT licensed.
