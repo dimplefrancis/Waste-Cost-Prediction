@@ -4,12 +4,13 @@ from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 from error_handling import error_handler, DataError, logger
+import config
 
 @error_handler
-def load_data(batch_file, fail_file):
+def load_data():
     try:
-        batch_data = pd.read_csv(batch_file)
-        fail_data = pd.read_csv(fail_file)
+        batch_data = pd.read_csv(config.DATA_PATH['batch_data'])
+        fail_data = pd.read_csv(config.DATA_PATH['fail_data'])
         logger.info(f"Data loaded successfully. Batch data shape: {batch_data.shape}, Fail data shape: {fail_data.shape}")
         return batch_data, fail_data
     except FileNotFoundError as e:
@@ -43,12 +44,12 @@ def handle_missing_values(data):
         #print(f"Categorical columns: {categorical_columns}")
         
         # For numeric columns, impute with median
-        numeric_imputer = SimpleImputer(strategy='median')
+        numeric_imputer = SimpleImputer(strategy=config.MISSING_VALUE_STRATEGY['numeric'])
         data[numeric_columns] = pd.DataFrame(numeric_imputer.fit_transform(data[numeric_columns]), 
                                             columns=numeric_columns, index=data.index)
         
         # For categorical columns, impute with most frequent value
-        categorical_imputer = SimpleImputer(strategy='most_frequent')
+        categorical_imputer = SimpleImputer(strategy=config.MISSING_VALUE_STRATEGY['categorical'])
         data[categorical_columns] = pd.DataFrame(categorical_imputer.fit_transform(data[categorical_columns]), 
                                                 columns=categorical_columns, index=data.index)
         logger.info(f"Missing values handled. Remaining null values: {data.isnull().sum().sum()}")
@@ -101,7 +102,7 @@ def preprocess_data(merged_data):
 
 @error_handler
 def split_data(X, y, test_size=0.2, random_state=42):
-    return train_test_split(X, y, test_size=test_size, random_state=random_state)
+    return train_test_split(X, y, test_size=config.TEST_SIZE, random_state=config.RANDOM_STATE)
 
 @error_handler
 def prepare_data(batch_file, fail_file):
@@ -114,9 +115,9 @@ def prepare_data(batch_file, fail_file):
     return X_train, X_test, y_train, y_test, pt
 
 if __name__ == "__main__":
-    batch_file = 'data/data_batch.csv'
-    fail_file = 'data/data_fail.csv'
-    X_train, X_test, y_train, y_test, pt = prepare_data(batch_file, fail_file)
+    batch_data = pd.read_csv(config.DATA_PATH['batch_data'])
+    fail_data = pd.read_csv(config.DATA_PATH['fail_data'])
+    X_train, X_test, y_train, y_test, pt = prepare_data(batch_data, fail_data)
     print("Data preparation complete.")
     print(f"Training set shape: {X_train.shape}")
     print(f"Test set shape: {X_test.shape}")

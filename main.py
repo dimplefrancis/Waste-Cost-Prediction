@@ -5,12 +5,13 @@ from evaluation import evaluate_model, cross_validate, plot_actual_vs_predicted
 from utils import remove_outliers, inverse_transform_target
 import pandas as pd
 from error_handling import error_handler, logger, DataError, ModelError
+import config
 
 @error_handler
 def main():
     try:
         # Load data
-        batch_data, fail_data = load_data('data/data_batch.csv', 'data/data_fail.csv')
+        batch_data, fail_data = load_data()
         
         # Handle missing values
         fail_data = fail_data.drop(columns=['Additional Information'])

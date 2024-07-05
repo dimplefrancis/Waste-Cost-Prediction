@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import numpy as np
 from error_handling import error_handler, DataError, logger
+import config
 
 @error_handler
 def create_new_features(data):
@@ -21,10 +22,10 @@ def create_new_features(data):
         raise DataError("Division by zero encountered while creating new features")
 
 @error_handler
-def apply_polynomial_features(X, degree=2):
+def apply_polynomial_features(X):
     try:
         # Implement polynomial feature transformation
-        poly = PolynomialFeatures(degree=degree, include_bias=False)
+        poly = PolynomialFeatures(degree=config.POLYNOMIAL_DEGREE, include_bias=False)
         X_poly = poly.fit_transform(X)
         
         # Get feature names (compatible with both older and newer scikit-learn versions)
@@ -46,10 +47,10 @@ def scale_features(X):
     return pd.DataFrame(X_scaled, columns=X.columns)
 
 @error_handler
-def select_features(X, y, n_features_to_select=20):
+def select_features(X, y):
     # Implement feature selection using RFE
-    estimator = RandomForestRegressor(n_estimators=100, random_state=42)
-    selector = RFE(estimator, n_features_to_select=n_features_to_select)
+    estimator = RandomForestRegressor(n_estimators=100, random_state=config.RANDOM_STATE)
+    selector = RFE(estimator, n_features_to_select=config.N_FEATURES_TO_SELECT)
     X_selected = selector.fit_transform(X, y)
     selected_features = X.columns[selector.support_]
     return pd.DataFrame(X_selected, columns=selected_features), selector

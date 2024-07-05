@@ -5,6 +5,7 @@ import lightgbm as lgb
 from sklearn.model_selection import cross_val_score
 import numpy as np
 from error_handling import error_handler, ModelError, logger
+import config
 
 @error_handler
 def create_stacking_regressor():
@@ -52,9 +53,9 @@ def predict(model, X_test):
         raise ModelError(f"Error in making predictions: {str(e)}")
 
 @error_handler
-def evaluate_model(model, X, y, cv=5):
+def evaluate_model(model, X, y):
     try:
-        scores = cross_val_score(model, X, y, cv=cv, scoring='r2')
+        scores = cross_val_score(model, X, y, cv=config.CV_FOLDS, scoring='r2')
         logger.info(f"Model evaluated. Mean R2 score: {np.mean(scores):.4f}")
         return scores
     except Exception as e:
