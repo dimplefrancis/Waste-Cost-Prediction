@@ -16,6 +16,8 @@ This project implements a machine learning model to predict waste costs in manuf
 - Implementation of stacking regressor model
 - Model evaluation and cross-validation
 - Visualization of results
+- Configurable parameters
+- Comprehensive error handling and logging
 
 ## 🛠️ Installation
 
@@ -44,6 +46,8 @@ waste-cost-prediction/
 
 ## 📊 Results
 
+The model's performance is evaluated using various metrics, including R-squared score, Mean Squared Error (MSE), and cross-validation scores. Visualizations of actual vs. predicted values are generated for both transformed and original scales.
+
 ### Model Performance
 
 - **Cross-validation scores:**
@@ -52,6 +56,7 @@ waste-cost-prediction/
   - Fold 3: 0.92957072
   - Fold 4: 0.94759019
   - Fold 5: 0.94246247
+
 - **Mean Cross-validation R2 Score:** 0.9463551220934384
 - **Standard Deviation of Cross-validation Scores:** 0.010101455359369406
 
@@ -94,6 +99,18 @@ This explanation helps understand which features are most influential in the mod
 - The model demonstrates strong potential for accurate waste cost predictions in manufacturing processes.
 - It can be a valuable tool for identifying factors that contribute most to waste costs, enabling targeted process improvements.
 - The consistent performance across cross-validation folds indicates good generalization to unseen data.
+
+🔧 Configuration
+You can adjust various parameters of the model and data processing in the config.py file, including:
+
+Data file paths
+Missing value handling strategies
+Feature engineering parameters
+Model hyperparameters
+Logging settings
+
+🐛 Error Handling
+The project implements comprehensive error handling and logging. Errors are categorized into DataError and ModelError, and all functions are decorated with an error_handler that logs any exceptions.
 
 📝 License
 This project is MIT licensed.

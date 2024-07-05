@@ -8,6 +8,17 @@ import config
 
 @error_handler
 def load_data():
+    """
+    Load batch and fail data from CSV files.
+
+    Returns:
+        tuple: A tuple containing two pandas DataFrames:
+            - batch_data (pd.DataFrame): The batch production data.
+            - fail_data (pd.DataFrame): The failure data.
+
+    Raises:
+        DataError: If there's an issue loading the data files.
+    """
     try:
         batch_data = pd.read_csv(config.DATA_PATH['batch_data'])
         fail_data = pd.read_csv(config.DATA_PATH['fail_data'])
@@ -59,13 +70,31 @@ def handle_missing_values(data):
         raise DataError(f"Error in handling missing values: {str(e)}")
 
 def standardize_values(value):
+    """
+    Standardize string values by converting to lowercase, stripping whitespace, and capitalizing.
+
+    Args:
+        value: The input value to be standardized.
+
+    Returns:
+        str or original type: The standardized value if it's a string, otherwise the original value.
+    """
     if isinstance(value, str):
         return value.lower().strip().capitalize()
     return value
 
 @error_handler
 def merge_datasets(batch_data, fail_data):
-    # Implement dataset merging logic
+    """
+    Merge batch and fail datasets.
+
+    Args:
+        batch_data (pd.DataFrame): The batch production data.
+        fail_data (pd.DataFrame): The failure data.
+
+    Returns:
+        pd.DataFrame: The merged dataset.
+    """
     merged_data = pd.merge(batch_data, fail_data, 
                            left_on=['Material', 'Batch'], 
                            right_on=['Product/Material', 'Batch Number'], 
@@ -78,6 +107,32 @@ def merge_datasets(batch_data, fail_data):
 
 @error_handler
 def preprocess_data(merged_data):
+    """
+    Preprocess the merged dataset by creating new features, scaling, and transforming the target variable.
+
+    This function performs the following steps:
+    1. Creates new features: 'Yield_Efficiency' and 'Waste_Percentage'.
+    2. Selects relevant features for the model.
+    3. Scales the features using StandardScaler.
+    4. Transforms the target variable using PowerTransformer.
+
+    The PowerTransformer is used to make the target variable more Gaussian-like, which can improve
+    model performance. It applies the Yeo-Johnson transformation and then standardizes the result.
+    This is particularly useful for our 'Waste Total Cost' target, which may have a skewed distribution.
+
+    Args:
+        merged_data (pd.DataFrame): The merged dataset containing all features and the target variable.
+
+    Returns:
+        tuple: A tuple containing:
+            - X (pd.DataFrame): The scaled feature matrix.
+            - y (np.array): The transformed target variable.
+            - pt (PowerTransformer): The fitted PowerTransformer for later inverse transformation.
+
+    Note:
+        The fitted PowerTransformer (pt) should be used to inverse_transform predictions
+        to return them to the original scale.
+    """
     # Create new features
     merged_data['Yield_Efficiency'] = merged_data['G.R.Qty'] / merged_data['Theoretical Yield']
     merged_data['Waste_Percentage'] = merged_data['Waste in ML'] / merged_data['Total Input in ML'] * 100
