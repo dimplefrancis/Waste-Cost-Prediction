@@ -2,7 +2,7 @@ from data_preparation import load_data, handle_missing_values, merge_datasets, p
 from feature_engineering import create_new_features, apply_polynomial_features, scale_features, select_features
 from model import create_stacking_regressor, train_model, predict
 from evaluation import evaluate_model, cross_validate, plot_actual_vs_predicted
-from utils import remove_outliers, inverse_transform_target
+from utils import remove_outliers, inverse_transform_target, save_model, load_model, save_transformer, load_transformer
 import pandas as pd
 from error_handling import error_handler, logger, DataError, ModelError
 import config
@@ -76,6 +76,12 @@ def main():
         # Create and train model
         model = create_stacking_regressor()
         trained_model = train_model(model, X_train, y_train)
+
+        # Save the trained model
+        save_model(trained_model, 'trained_model.joblib')
+        
+        # Save the PowerTransformer
+        save_transformer(pt, 'power_transformer.joblib')
         
         # Make predictions
         y_pred = predict(trained_model, X_test)
@@ -108,5 +114,29 @@ def main():
         logger.error(f"Model error: {str(e)}")
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}")
+    
+@error_handler
+def load_and_predict(X_new):
+    try:
+        # Load the saved model
+        model = load_model('trained_model.joblib')
+        
+        # Load the saved PowerTransformer
+        pt = load_transformer('power_transformer.joblib')
+        
+        # Make predictions
+        y_pred_transformed = predict(model, X_new)
+        
+        # Inverse transform predictions
+        y_pred = inverse_transform_target(pt, y_pred_transformed)
+        
+        return y_pred
+    except Exception as e:
+        logger.error(f"Error in loading model and making predictions: {str(e)}")
+        raise    
 if __name__ == "__main__":
     main()
+    # Example of using the loaded model for predictions
+    # X_new = ... # New data for prediction
+    # predictions = load_and_predict(X_new)
+    # print(predictions)
