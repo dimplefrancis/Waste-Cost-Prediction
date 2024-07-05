@@ -3,32 +3,49 @@ from sklearn.feature_selection import RFE
 from sklearn.ensemble import RandomForestRegressor
 import pandas as pd
 import numpy as np
+from error_handling import error_handler, DataError, logger
 
+@error_handler
 def create_new_features(data):
-    # Implement feature creation logic
-    data['Yield_Efficiency'] = data['G.R.Qty'] / data['Theoretical Yield']
-    data['Waste_Percentage'] = data['Waste in ML'] / data['Total Input in ML'] * 100
-    return data
+    try:
+        # Implement feature creation logic
+        data['Yield_Efficiency'] = data['G.R.Qty'] / data['Theoretical Yield']
+        data['Waste_Percentage'] = data['Waste in ML'] / data['Total Input in ML'] * 100
+        logger.info("New features created successfully")
+        return data
+    except KeyError as e:
+        logger.error(f"Missing required column: {str(e)}")
+        raise DataError(f"Unable to create new features: missing column {str(e)}")
+    except ZeroDivisionError:
+        logger.error("Division by zero encountered while creating new features")
+        raise DataError("Division by zero encountered while creating new features")
 
+@error_handler
 def apply_polynomial_features(X, degree=2):
-    # Implement polynomial feature transformation
-    poly = PolynomialFeatures(degree=degree, include_bias=False)
-    X_poly = poly.fit_transform(X)
-    
-    # Get feature names (compatible with both older and newer scikit-learn versions)
-    if hasattr(poly, 'get_feature_names_out'):
-        feature_names = poly.get_feature_names_out(X.columns)
-    else:
-        feature_names = poly.get_feature_names(X.columns)
-    
-    return pd.DataFrame(X_poly, columns=feature_names, index=X.index)
+    try:
+        # Implement polynomial feature transformation
+        poly = PolynomialFeatures(degree=degree, include_bias=False)
+        X_poly = poly.fit_transform(X)
+        
+        # Get feature names (compatible with both older and newer scikit-learn versions)
+        if hasattr(poly, 'get_feature_names_out'):
+            feature_names = poly.get_feature_names_out(X.columns)
+        else:
+            feature_names = poly.get_feature_names(X.columns)
+        logger.info(f"Polynomial features applied. New feature count: {len(feature_names)}")
+        return pd.DataFrame(X_poly, columns=feature_names, index=X.index)
+    except Exception as e:
+        logger.error(f"Error applying polynomial features: {str(e)}")
+        raise DataError(f"Error in applying polynomial features: {str(e)}")
 
+@error_handler
 def scale_features(X):
     # Implement feature scaling
     scaler = RobustScaler()
     X_scaled = scaler.fit_transform(X)
     return pd.DataFrame(X_scaled, columns=X.columns)
 
+@error_handler
 def select_features(X, y, n_features_to_select=20):
     # Implement feature selection using RFE
     estimator = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -37,6 +54,7 @@ def select_features(X, y, n_features_to_select=20):
     selected_features = X.columns[selector.support_]
     return pd.DataFrame(X_selected, columns=selected_features), selector
 
+@error_handler
 def engineer_features(X, y):
     # Orchestrate the feature engineering process
     X = create_new_features(X)

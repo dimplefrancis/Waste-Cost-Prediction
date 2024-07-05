@@ -3,61 +3,66 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PowerTransformer
+from error_handling import error_handler, DataError, logger
 
+@error_handler
 def load_data(batch_file, fail_file):
-    # Load the datasets
-    batch_data = pd.read_csv(batch_file)
-    fail_data = pd.read_csv(fail_file)
-    print("Shape of batch_data:", batch_data.shape)
-    print("Shape of fail_data:", fail_data.shape)
-    return batch_data, fail_data
+    try:
+        batch_data = pd.read_csv(batch_file)
+        fail_data = pd.read_csv(fail_file)
+        logger.info(f"Data loaded successfully. Batch data shape: {batch_data.shape}, Fail data shape: {fail_data.shape}")
+        return batch_data, fail_data
+    except FileNotFoundError as e:
+        logger.error(f"File not found: {str(e)}")
+        raise DataError(f"Unable to load data: {str(e)}")
+    except pd.errors.EmptyDataError:
+        logger.error("The file is empty.")
+        raise DataError("The data file is empty.")
 
-def load_data(batch_file, fail_file):
-    # Load the datasets
-    batch_data = pd.read_csv(batch_file)
-    fail_data = pd.read_csv(fail_file)
-    #print("Shape of batch_data:", batch_data.shape)
-    #print("Shape of fail_data:", fail_data.shape)
-    return batch_data, fail_data
-
+@error_handler
 def handle_missing_values(data):
-    # Convert specified columns to numeric, coercing errors to NaN
-    columns_to_convert = [
-        'Order Quantity (Expected Yield)',
-        'Total Quantity Produced (plate packs / bottles)',
-        'Cost Variance (Expected Yield v Actual)',
-        'Costing'
-    ]
-    
-    for column in columns_to_convert:
-        if column in data.columns:
-            data[column] = pd.to_numeric(data[column], errors='coerce')
+    try:
+        # Convert specified columns to numeric, coercing errors to NaN
+        columns_to_convert = [
+            'Order Quantity (Expected Yield)',
+            'Total Quantity Produced (plate packs / bottles)',
+            'Cost Variance (Expected Yield v Actual)',
+            'Costing'
+        ]
+        
+        for column in columns_to_convert:
+            if column in data.columns:
+                data[column] = pd.to_numeric(data[column], errors='coerce')
 
-    # Re-select numeric and categorical columns after conversion
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    categorical_columns = data.select_dtypes(exclude=[np.number]).columns
-    
-    # Debugging statements
-    #print(f"Numeric columns: {numeric_columns}")
-    #print(f"Categorical columns: {categorical_columns}")
-    
-    # For numeric columns, impute with median
-    numeric_imputer = SimpleImputer(strategy='median')
-    data[numeric_columns] = pd.DataFrame(numeric_imputer.fit_transform(data[numeric_columns]), 
-                                         columns=numeric_columns, index=data.index)
-    
-    # For categorical columns, impute with most frequent value
-    categorical_imputer = SimpleImputer(strategy='most_frequent')
-    data[categorical_columns] = pd.DataFrame(categorical_imputer.fit_transform(data[categorical_columns]), 
-                                             columns=categorical_columns, index=data.index)
-    
-    return data
+        # Re-select numeric and categorical columns after conversion
+        numeric_columns = data.select_dtypes(include=[np.number]).columns
+        categorical_columns = data.select_dtypes(exclude=[np.number]).columns
+        
+        # Debugging statements
+        #print(f"Numeric columns: {numeric_columns}")
+        #print(f"Categorical columns: {categorical_columns}")
+        
+        # For numeric columns, impute with median
+        numeric_imputer = SimpleImputer(strategy='median')
+        data[numeric_columns] = pd.DataFrame(numeric_imputer.fit_transform(data[numeric_columns]), 
+                                            columns=numeric_columns, index=data.index)
+        
+        # For categorical columns, impute with most frequent value
+        categorical_imputer = SimpleImputer(strategy='most_frequent')
+        data[categorical_columns] = pd.DataFrame(categorical_imputer.fit_transform(data[categorical_columns]), 
+                                                columns=categorical_columns, index=data.index)
+        logger.info(f"Missing values handled. Remaining null values: {data.isnull().sum().sum()}")
+        return data
+    except Exception as e:
+        logger.error(f"Error handling missing values: {str(e)}")
+        raise DataError(f"Error in handling missing values: {str(e)}")
 
 def standardize_values(value):
     if isinstance(value, str):
         return value.lower().strip().capitalize()
     return value
 
+@error_handler
 def merge_datasets(batch_data, fail_data):
     # Implement dataset merging logic
     merged_data = pd.merge(batch_data, fail_data, 
@@ -70,6 +75,7 @@ def merge_datasets(batch_data, fail_data):
     
     return merged_data
 
+@error_handler
 def preprocess_data(merged_data):
     # Create new features
     merged_data['Yield_Efficiency'] = merged_data['G.R.Qty'] / merged_data['Theoretical Yield']
@@ -93,9 +99,11 @@ def preprocess_data(merged_data):
     
     return X_scaled, y_transformed, pt
 
+@error_handler
 def split_data(X, y, test_size=0.2, random_state=42):
     return train_test_split(X, y, test_size=test_size, random_state=random_state)
 
+@error_handler
 def prepare_data(batch_file, fail_file):
     batch_data, fail_data = load_data(batch_file, fail_file)
     batch_data = handle_missing_values(batch_data)
